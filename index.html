@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大模型使用情况调查</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#8B5CF6',
+                        accent: '#10B981',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50;
+            }
+            .btn-secondary {
+                @apply bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-secondary/50;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-light to-blue-50 min-h-screen font-sans text-dark">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-12 animate-fade-in">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-dark mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                大模型使用情况调查
+            </h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                请选择您平时最常用的AI大模型，帮助我们了解当前大模型的使用趋势。
+            </p>
+        </header>
+        
+        <!-- 调查卡片 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-12 transform transition-all duration-500 hover:shadow-2xl animate-slide-up">
+            <!-- 调查选项 -->
+            <div id="survey-container">
+                <p class="text-xl font-medium mb-6 text-gray-700">请选择您常用的大模型（可多选）：</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <!-- 大模型选项卡片 -->
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="ChatGPT">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-comments text-primary text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">ChatGPT</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">OpenAI开发的对话式AI模型</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="Claude">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-robot text-secondary text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">Claude</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">Anthropic开发的AI助手</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="文心一言">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-heart text-red-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">文心一言</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">百度开发的生成式对话产品</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="通义千问">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-leaf text-green-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">通义千问</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">阿里巴巴达摩院开发的大模型</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="讯飞星火">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-bolt text-orange-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">讯飞星火</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">科大讯飞开发的认知大模型</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="豆包">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-smile-o text-amber-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">豆包</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">字节跳动开发的智能助手</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="Gemini">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-star text-blue-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">Gemini</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">谷歌开发的多模态大模型</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="Bard">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-comment text-green-600 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">Bard</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">谷歌开发的对话式AI服务</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="其他">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-ellipsis-h text-gray-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">其他</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">请在下方注明具体模型</p>
+                    </div>
+                    
+                    <div class="model-card border border-gray-200 rounded-xl p-5 card-hover cursor-pointer" data-model="从不使用">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-3">
+                                <i class="fa fa-ban text-gray-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-lg">从不使用</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">目前不使用任何大模型</p>
+                    </div>
+                </div>
+                
+                <!-- 其他模型输入框 -->
+                <div id="other-model-container" class="mb-6 hidden">
+                    <label for="other-model" class="block text-gray-700 font-medium mb-2">请注明您使用的其他模型：</label>
+                    <input type="text" id="other-model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="请输入模型名称">
+                </div>
+                
+                <!-- 提交按钮 -->
+                <div class="text-center">
+                    <button id="submit-btn" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        提交我的选择
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 提交成功消息 (默认隐藏) -->
+            <div id="success-message" class="text-center py-8 hidden animate-fade-in">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-check text-accent text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">提交成功！</h3>
+                <p class="text-gray-600 mb-6">感谢您参与本次调查，您的反馈对我们很重要。</p>
+                <button id="back-to-survey" class="btn-secondary">
+                    返回
+                </button>
+            </div>
+        </div>
+        
+        <!-- 结果展示区域 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-12">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">调查结果</h2>
+                <p class="text-gray-600">点击下方按钮查看当前的调查统计结果</p>
+            </div>
+            
+            <div class="text-center mb-8">
+                <button id="show-results" class="btn-secondary">
+                    <i class="fa fa-bar-chart mr-2"></i>查看结果图表
+                </button>
+            </div>
+            
+            <!-- 图表容器 (默认隐藏) -->
+            <div id="results-container" class="hidden animate-fade-in">
+                <div class="h-[400px] mb-6">
+                    <canvas id="results-chart"></canvas>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 rounded-xl p-5">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-700">参与人数统计</h3>
+                        <div class="flex items-end">
+                            <span id="total-participants" class="text-4xl font-bold text-primary">0</span>
+                            <span class="text-gray-600 ml-2 mb-1">人</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-xl p-5">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-700">最受欢迎模型</h3>
+                        <div class="flex items-center">
+                            <span id="most-popular" class="text-2xl font-bold text-secondary">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 二维码区域 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center mb-8 animate-slide-up">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">扫描二维码参与调查</h2>
+            <p class="text-gray-600 mb-6">请使用手机扫描下方二维码，参与本次大模型使用情况调查</p>
+            
+            <div class="flex justify-center">
+                <div id="qrcode" class="p-4 bg-white rounded-lg shadow-md"></div>
+            </div>
+            
+            <p class="text-gray-500 text-sm mt-4">或者访问: <a href="#" class="text-primary hover:underline" id="survey-url">正在生成链接...</a></p>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="text-center text-gray-500 text-sm py-4">
+            <p>© 2023 大模型使用情况调查 | 为讲座统计而设计</p>
+        </footer>
+    </div>
+
+    <script>
+        // 初始化数据 - 增加了新模型和"从不使用"选项
+        let surveyData = JSON.parse(localStorage.getItem('aiModelSurveyData')) || {
+            totalParticipants: 0,
+            models: {
+                'ChatGPT': 0,
+                'Claude': 0,
+                '文心一言': 0,
+                '通义千问': 0,
+                '讯飞星火': 0,
+                '豆包': 0,
+                'Gemini': 0,
+                'Bard': 0,
+                '其他': 0,
+                '从不使用': 0
+            },
+            otherModels: []
+        };
+        
+        // 选中的模型
+        let selectedModels = [];
+        
+        // DOM 元素
+        const modelCards = document.querySelectorAll('.model-card');
+        const otherModelContainer = document.getElementById('other-model-container');
+        const otherModelInput = document.getElementById('other-model');
+        const submitBtn = document.getElementById('submit-btn');
+        const surveyContainer = document.getElementById('survey-container');
+        const successMessage = document.getElementById('success-message');
+        const backToSurveyBtn = document.getElementById('back-to-survey');
+        const showResultsBtn = document.getElementById('show-results');
+        const resultsContainer = document.getElementById('results-container');
+        const totalParticipantsEl = document.getElementById('total-participants');
+        const mostPopularEl = document.getElementById('most-popular');
+        const surveyUrlEl = document.getElementById('survey-url');
+        
+        // 初始化二维码
+        function initQRCode() {
+            const url = window.location.href;
+            surveyUrlEl.textContent = url;
+            surveyUrlEl.href = url;
+            
+            QRCode.toCanvas(document.getElementById('qrcode'), url, {
+                width: 200,
+                margin: 1,
+                color: {
+                    dark: '#1E293B',
+                    light: '#FFFFFF'
+                }
+            }, function(error) {
+                if (error) console.error(error);
+            });
+        }
+        
+        // 模型卡片点击事件
+        modelCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const model = this.getAttribute('data-model');
+                
+                // 处理特殊选项逻辑
+                if (model === '其他') {
+                    // 如果选择了"其他"，显示输入框
+                    otherModelContainer.classList.toggle('hidden', !this.classList.contains('border-primary'));
+                    
+                    // 如果选择了"其他"，取消"从不使用"的选择
+                    if (this.classList.contains('border-primary') && selectedModels.includes('从不使用')) {
+                        removeModel('从不使用');
+                        document.querySelector('[data-model="从不使用"]').classList.remove('border-primary', 'bg-primary/5');
+                    }
+                } else if (model === '从不使用') {
+                    // 如果选择了"从不使用"，取消其他所有选择
+                    if (!this.classList.contains('border-primary')) {
+                        modelCards.forEach(c => {
+                            if (c.getAttribute('data-model') !== '从不使用') {
+                                c.classList.remove('border-primary', 'bg-primary/5');
+                            }
+                        });
+                        selectedModels = ['从不使用'];
+                        otherModelContainer.classList.add('hidden');
+                    }
+                } else {
+                    // 如果选择了普通模型，取消"从不使用"的选择
+                    if (selectedModels.includes('从不使用')) {
+                        removeModel('从不使用');
+                        document.querySelector('[data-model="从不使用"]').classList.remove('border-primary', 'bg-primary/5');
+                    }
+                    
+                    // 如果选择了普通模型，隐藏"其他"输入框
+                    if (selectedModels.includes('其他')) {
+                        otherModelContainer.classList.add('hidden');
+                        removeModel('其他');
+                        document.querySelector('[data-model="其他"]').classList.remove('border-primary', 'bg-primary/5');
+                    }
+                }
+                
+                // 切换选中状态（"从不使用"单独处理）
+                if (model !== '从不使用') {
+                    if (this.classList.contains('border-primary')) {
+                        this.classList.remove('border-primary', 'bg-primary/5');
+                        removeModel(model);
+                    } else {
+                        this.classList.add('border-primary', 'bg-primary/5');
+                        addModel(model);
+                    }
+                } else {
+                    // "从不使用"选项的状态切换
+                    if (this.classList.contains('border-primary')) {
+                        this.classList.remove('border-primary', 'bg-primary/5');
+                        removeModel(model);
+                    } else {
+                        this.classList.add('border-primary', 'bg-primary/5');
+                    }
+                }
+                
+                // 更新提交按钮状态
+                updateSubmitButton();
+            });
+        });
+        
+        // 添加模型到选中列表
+        function addModel(model) {
+            if (!selectedModels.includes(model)) {
+                selectedModels.push(model);
+            }
+        }
+        
+        // 从选中列表移除模型
+        function removeModel(model) {
+            selectedModels = selectedModels.filter(m => m !== model);
+        }
+        
+        // 更新提交按钮状态
+        function updateSubmitButton() {
+            submitBtn.disabled = selectedModels.length === 0;
+        }
+        
+        // 提交调查
+        submitBtn.addEventListener('click', function() {
+            // 更新调查数据
+            surveyData.totalParticipants++;
+            selectedModels.forEach(model => {
+                if (model === '其他' && otherModelInput.value.trim() !== '') {
+                    surveyData.otherModels.push(otherModelInput.value.trim());
+                }
+                surveyData.models[model]++;
+            });
+            
+            // 保存数据到本地存储
+            localStorage.setItem('aiModelSurveyData', JSON.stringify(surveyData));
+            
+            // 显示成功消息
+            surveyContainer.classList.add('hidden');
+            successMessage.classList.remove('hidden');
+            
+            // 重置表单
+            resetForm();
+        });
+        
+        // 返回调查表单
+        backToSurveyBtn.addEventListener('click', function() {
+            successMessage.classList.add('hidden');
+            surveyContainer.classList.remove('hidden');
+        });
+        
+        // 重置表单
+        function resetForm() {
+            modelCards.forEach(card => {
+                card.classList.remove('border-primary', 'bg-primary/5');
+            });
+            selectedModels = [];
+            otherModelContainer.classList.add('hidden');
+            otherModelInput.value = '';
+            updateSubmitButton();
+        }
+        
+        // 显示结果
+        showResultsBtn.addEventListener('click', function() {
+            resultsContainer.classList.toggle('hidden');
+            
+            // 如果显示结果，更新图表
+            if (!resultsContainer.classList.contains('hidden')) {
+                updateResults();
+            }
+        });
+        
+        // 更新结果展示
+        function updateResults() {
+            // 更新参与人数
+            totalParticipantsEl.textContent = surveyData.totalParticipants;
+            
+            // 找出最受欢迎的模型
+            let mostPopular = '-';
+            let maxVotes = 0;
+            for (const [model, count] of Object.entries(surveyData.models)) {
+                if (count > maxVotes) {
+                    maxVotes = count;
+                    mostPopular = model;
+                }
+            }
+            mostPopularEl.textContent = mostPopular;
+            
+            // 更新图表
+            updateChart();
+        }
+        
+        // 图表实例
+        let resultsChart = null;
+        
+        // 更新图表
+        function updateChart() {
+            const ctx = document.getElementById('results-chart').getContext('2d');
+            
+            // 准备图表数据
+            const labels = Object.keys(surveyData.models);
+            const data = Object.values(surveyData.models);
+            // 扩展颜色数组以匹配新增的模型选项
+            const backgroundColors = [
+                'rgba(59, 130, 246, 0.7)',  // primary (ChatGPT)
+                'rgba(139, 92, 246, 0.7)',  // secondary (Claude)
+                'rgba(239, 68, 68, 0.7)',   // red (文心一言)
+                'rgba(16, 185, 129, 0.7)',  // green (通义千问)
+                'rgba(249, 115, 22, 0.7)',  // orange (讯飞星火)
+                'rgba(245, 158, 11, 0.7)',  // amber (豆包)
+                'rgba(37, 99, 235, 0.7)',   // blue (Gemini)
+                'rgba(16, 185, 129, 0.7)',  // green (Bard)
+                'rgba(107, 114, 128, 0.7)', // gray (其他)
+                'rgba(156, 163, 175, 0.7)'  // gray-light (从不使用)
+            ];
+            
+            // 如果图表已存在，销毁它
+            if (resultsChart) {
+                resultsChart.destroy();
+            }
+            
+            // 创建新图表
+            resultsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '使用人数',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barThickness: 35,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = surveyData.totalParticipants;
+                                    const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                                    return `人数: ${context.raw} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(203, 213, 225, 0.5)'
+                            },
+                            ticks: {
+                                precision: 0
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            initQRCode();
+        });
+    </script>
+</body>
+</html>
